@@ -665,15 +665,13 @@ class wpdbBackup {
 		if ( $this->can_user_backup() ) {
 			// try to get a time from the input string
 			$time = strtotime(strval($_POST['backup-time']));
-			if ( ! empty( $time ) && time() < $time ) {
+			if ( ! empty( $time ) ) {
 				wp_clear_scheduled_hook( 'wp_db_backup_cron' ); // unschedule previous
 				$scheds = (array) wp_get_schedules();
 				$name = get_option('wp_cron_backup_schedule');
-				if ( 0 != $time ) {
-					wp_schedule_event($time, $name, 'wp_db_backup_cron');
-					echo gmdate(get_option('date_format') . ' ' . get_option('time_format'), $time + (get_option('gmt_offset') * 3600));
-					exit;
-				}
+				wp_schedule_event($time, $name, 'wp_db_backup_cron');
+				echo gmdate(get_option('date_format') . ' ' . get_option('time_format'), $time + (get_option('gmt_offset') * 3600));
+				exit;
 			}
 		} else {
 			die(0);
@@ -950,7 +948,7 @@ class wpdbBackup {
 		$this->stow("# " . sprintf(__('Database: %s','wp-db-backup'),$this->backquote(DB_NAME)) . "\n");
 		$this->stow("# --------------------------------------------------------\n");
 		
-			if ( (is_array($other_tables)) && (count($other_tables) > 0) )
+		if ( (is_array($other_tables)) && (count($other_tables) > 0) )
 			$tables = array_merge($core_tables, $other_tables);
 		else
 			$tables = $core_tables;
