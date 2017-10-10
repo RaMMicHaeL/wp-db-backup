@@ -97,7 +97,7 @@ class wpdbBackup {
 		
 		$table_prefix = ( isset( $table_prefix ) ) ? $table_prefix : $wpdb->prefix;
 		$datum = date("Ymd_B");
-		$this->backup_filename = DB_NAME . "_$table_prefix$datum.sql";
+		$this->backup_filename = DB_NAME . "_$table_prefix$datum.sql".($this->has_gz() ? '.gz' : '');
 
 		$possible_names = array(
 			'categories',
@@ -710,12 +710,32 @@ class wpdbBackup {
 
 	function open($filename = '', $mode = 'w') {
 		if ('' == $filename) return false;
-		$fp = @fopen($filename, $mode);
+		if ($this->has_gz()) {
+			$fp = @gzopen($filename, $mode);
+		} else {
+			$fp = @fopen($filename, $mode);
+		}
 		return $fp;
 	}
 
+	function write($fp, $string) {
+		if ($this->has_gz()) {
+			return @gzwrite($fp, $string);
+		} else {
+			return @fwrite($fp, $string);
+		}
+	}
+
 	function close($fp) {
-		fclose($fp);
+		if ($this->has_gz()) {
+			gzclose($fp);
+		} else {
+			fclose($fp);
+		}
+	}
+
+	function has_gz() {
+		return function_exists('gzencode');
 	}
 
 	/**
@@ -724,7 +744,7 @@ class wpdbBackup {
 	 * @return null
 	 */
 	function stow($query_line) {
-		if(false === @fwrite($this->fp, $query_line))
+		if(false === $this->write($this->fp, $query_line))
 			$this->error(__('There was an error writing a line to the backup script:','wp-db-backup') . '  ' . $query_line . '  ' . $php_errormsg);
 	}
 	
@@ -1050,57 +1070,6 @@ class wpdbBackup {
 		if ('' == $filename) { return false; }
 		
 		$diskfile = $this->backup_dir . $filename;
-		$gz_diskfile = "{$diskfile}.gz";
-
-		/**
-		 * Try upping the memory limit before gzipping
-		 */
-		if ( function_exists('memory_get_usage') && ( (int) @ini_get('memory_limit') < 64 ) ) {
-			@ini_set('memory_limit', '64M' );
-		}
-
-		if ( file_exists( $diskfile ) && empty( $_GET['download-retry'] ) ) {
-			/**
-			 * Try gzipping with an external application
-			 */
-			if ( file_exists( $diskfile ) && ! file_exists( $gz_diskfile ) ) {
-				@exec( "gzip $diskfile" );
-			}
-
-			if ( file_exists( $gz_diskfile ) ) {
-				if ( file_exists( $diskfile ) ) {
-					unlink($diskfile);
-				}
-				$diskfile = $gz_diskfile;
-				$filename = "{$filename}.gz";
-			
-			/**
-			 * Try to compress to gzip, if available 
-			 */
-			} else {
-				if ( function_exists('gzencode') ) {
-					if ( function_exists('file_get_contents') ) {
-						$text = file_get_contents($diskfile);
-					} else {
-						$text = implode("", file($diskfile));
-					}
-					$gz_text = gzencode($text, 9);
-					$fp = fopen($gz_diskfile, "w");
-					fwrite($fp, $gz_text);
-					if ( fclose($fp) ) {
-						unlink($diskfile);
-						$diskfile = $gz_diskfile;
-						$filename = "{$filename}.gz";
-					}
-				}
-			}
-			/*
-			 * 
-			 */
-		} elseif ( file_exists( $gz_diskfile ) && empty( $_GET['download-retry'] ) ) {
-			$diskfile = $gz_diskfile;
-			$filename = "{$filename}.gz";
-		}
 
 		if ('http' == $delivery) {
 			if ( ! file_exists( $diskfile ) ) {
