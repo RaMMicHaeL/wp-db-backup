@@ -394,7 +394,7 @@ class wpdbBackup {
 		}
 		
 		if (is_writable($this->backup_dir)) {
-			$this->fp = $this->open($this->backup_dir . $filename, 'a');
+			$this->fp = $this->open($this->backup_dir . $filename, 'ab');
 			if(!$this->fp) {
 				$this->error(__('Could not open the backup file for writing!','wp-db-backup'));
 				$this->error(array('loc' => 'frame', 'kind' => 'fatal', 'msg' =>  __('The backup file could not be saved.  Please check the permissions for writing to your backup directory and try again.','wp-db-backup')));
@@ -708,9 +708,13 @@ class wpdbBackup {
 		}
 	} 
 
-	function open($filename = '', $mode = 'w') {
+	function open($filename = '', $mode = 'wb') {
 		if ('' == $filename) return false;
 		if ($this->has_gz()) {
+			if (preg_match('/[wa]/', $mode)) {
+				// Set highest compression rate
+				$mode .= '9';
+			}
 			$fp = @gzopen($filename, $mode);
 		} else {
 			$fp = @fopen($filename, $mode);
