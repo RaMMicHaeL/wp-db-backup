@@ -96,7 +96,7 @@ class wpdbBackup {
 		add_filter('wp_db_b_schedule_choices', array(&$this, 'schedule_choices'));
 		
 		$table_prefix = ( isset( $table_prefix ) ) ? $table_prefix : $wpdb->prefix;
-		$datum = date("Ymd_B");
+		$datum = date("Ymd_His");
 		$this->backup_filename = DB_NAME . "_$table_prefix$datum.sql".($this->has_gz() ? '.gz' : '');
 
 		$possible_names = array(
