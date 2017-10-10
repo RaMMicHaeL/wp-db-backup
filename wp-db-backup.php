@@ -48,7 +48,7 @@ if ( ! defined('WP_BACKUP_URL') ) {
 }
 
 if ( ! defined('ROWS_PER_SEGMENT') ) {
-	define('ROWS_PER_SEGMENT', 100);
+	define('ROWS_PER_SEGMENT', 5000);
 }
 
 /** 
