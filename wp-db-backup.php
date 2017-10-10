@@ -1429,9 +1429,22 @@ class wpdbBackup {
 		$other_tables = get_option('wp_cron_backup_tables');
 		$recipient = get_option('wp_cron_backup_recipient');
 		$backup_file = $this->db_backup($core_tables, $other_tables);
-		if (false !== $backup_file) 
+		if (false === $backup_file) {
+			return false;
+		}
+		if ('local@local.com' != $recipient) {
 			return $this->deliver_backup($backup_file, 'smtp', $recipient, 'main');
-		else return false;
+		} else {
+			// Leave the files locally, remove old files if any
+			$backup_files = glob($this->backup_dir.'/*.'.pathinfo($backup_file, PATHINFO_EXTENSION));
+			if (count($backup_files) > 3) {
+				sort($backup_files);
+				foreach (array_slice($backup_files, 0, -3) as $old_file) {
+					unlink($old_file);
+				}
+			}
+			return true;
+		}
 	}
 
 	function add_sched_options($sched) {
