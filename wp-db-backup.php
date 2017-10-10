@@ -33,7 +33,7 @@ if ( ! defined('ABSPATH') ) {
 	die('Please do not load this file directly.');
 }
 
-$rand = substr( md5( md5( DB_PASSWORD ) ), -5 );
+$rand = substr( md5( AUTH_KEY ), -10 );
 global $wpdbb_content_dir, $wpdbb_content_url, $wpdbb_plugin_dir;
 $wpdbb_content_dir = ( defined('WP_CONTENT_DIR') ) ? WP_CONTENT_DIR : ABSPATH . 'wp-content';
 $wpdbb_content_url = ( defined('WP_CONTENT_URL') ) ? WP_CONTENT_URL : get_option('siteurl') . '/wp-content';
