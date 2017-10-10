@@ -556,13 +556,15 @@ class wpdbBackup {
 
 					xml.open('POST', 'admin-ajax.php', true);
 					xml.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-					if ( xml.overrideMimeType )
-						xml.setRequestHeader('Connection', 'close');
 					xml.send('action=save_backup_time&_wpnonce=<?php echo wp_create_nonce($this->referer_check_key); ?>&backup-time='+tVal);
 					xml.onreadystatechange = function() {
-						if ( 4 == xml.readyState && '0' != xml.responseText ) {
-							backupTime.innerHTML = xml.responseText;
-							initTimeChange();
+						if ( 4 == xml.readyState ) {
+							if ( 200 == xml.status && '0' != xml.responseText ) {
+								backupTime.innerHTML = xml.responseText;
+								initTimeChange();
+							} else {
+								alert("Server error, could not set next backup");
+							}
 						}
 					}
 				}
