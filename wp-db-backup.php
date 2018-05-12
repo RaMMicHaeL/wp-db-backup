@@ -1440,7 +1440,7 @@ class wpdbBackup {
 			return $this->deliver_backup($backup_file, 'smtp', $recipient, 'main');
 		} else {
 			// Leave the files locally, remove old files if any
-			$backup_files = glob($this->backup_dir.'/*.'.pathinfo($backup_file, PATHINFO_EXTENSION));
+			$backup_files = glob($this->backup_dir.'*.'.pathinfo($backup_file, PATHINFO_EXTENSION));
 			if (count($backup_files) > 3) {
 				sort($backup_files);
 				foreach (array_slice($backup_files, 0, -3) as $old_file) {
